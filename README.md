@@ -78,3 +78,7 @@ client.close_client();
 ## Contributions and feedback
 
 Feel free to raise issues or submit pull requests.  
+
+## Alternatives
+
+Be sure to check out [easywsclient](https://github.com/dhbaird/easywsclient) if you need something a bit more full featured.
