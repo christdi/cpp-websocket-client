@@ -140,19 +140,30 @@ class websocket_client {
           throw websocket_exception(strerror(errno));
         }
       }
+    
+      std::string http_response;
+      
+      while (http_response.find("\r\n\r\n") == std::string::npos) {
+        int bytes_read = 0;
+        char buffer[1024];
 
-      int bytes_read = 0;
-      char buffer[1024];
+        bytes_read = recv(_fd, buffer, 1024, 0);
 
-      bytes_read = recv(_fd, buffer, 1024, 0);
+        if (bytes_read <= 0) {
+          if (bytes_read == 0) {
+            throw websocket_exception("server hungup during handshake");
+          }          
 
-      if (bytes_read <= 0) {
-        if (bytes_read == 0) {
-          throw websocket_exception("server hungup during handshake");
+          throw websocket_exception(strerror(errno));
         }
 
-        throw websocket_exception(strerror(errno));
-      }      
+        buffer[bytes_read] = '\0';
+        http_response.append(buffer);
+      }
+
+      if (http_response.find("101 Switching Protocols") == std::string::npos) {
+        throw websocket_exception("websocket handshake failed, HTTP status 101 was not returned from handshake");
+      }
     }
 
     template <typename func_t>
@@ -264,6 +275,8 @@ class websocket_client {
         }
 
         total_bytes_read += bytes_read;
+
+        buffer[total_bytes_read] = '\0';
       }
 
 
